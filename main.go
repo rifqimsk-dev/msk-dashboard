@@ -23,15 +23,29 @@ func main() {
 }
 
 func CorsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        allowedOrigins := []string{
+            "http://localhost:3000",      // contoh port localhost
+            "https://msk-dashboard-production.up.railway.app",
+        }
 
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
+        origin := r.Header.Get("Origin")
+        for _, o := range allowedOrigins {
+            if o == origin {
+                w.Header().Set("Access-Control-Allow-Origin", origin)
+                w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+                break
+            }
+        }
+
+        // Untuk preflight request
+        if r.Method == http.MethodOptions {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+
+        next.ServeHTTP(w, r)
+    })
 }
+
