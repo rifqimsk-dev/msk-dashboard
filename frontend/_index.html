@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sales Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  </head>
+
+  <body class="bg-gray-100 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow px-6 py-4">
+      <h1 class="text-2xl font-bold">Sales & Service Dashboard</h1>
+    </header>
+
+    <!-- Main -->
+    <main class="p-6 space-y-6">
+      <!-- KPI Cards -->
+      <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl shadow p-5">
+          <p class="text-sm text-gray-500">Total Entry</p>
+          <h2 id="totalEntry" class="text-3xl font-bold mt-2">0</h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5">
+          <p class="text-sm text-gray-500">Total Amount</p>
+          <h2 id="totalAmount" class="text-3xl font-bold mt-2">0</h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5">
+          <p class="text-sm text-gray-500">Laki-laki</p>
+          <h2 id="totalLk" class="text-3xl font-bold mt-2">0</h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5">
+          <p class="text-sm text-gray-500">Perempuan</p>
+          <h2 id="totalPr" class="text-3xl font-bold mt-2">0</h2>
+        </div>
+      </section>
+
+      <!-- Charts -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Gender Chart -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="font-semibold mb-4">Distribusi Jenis Kelamin</h3>
+          <div id="genderChart"></div>
+        </div>
+
+        <!-- Type Motor -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="font-semibold mb-4">Tipe Motor</h3>
+          <div id="motorChart"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Script -->
+    <script>
+      async function loadDashboard() {
+        const gender = await fetch("http://localhost:8080/api/gender").then(
+          (res) => res.json()
+        );
+        const totalEntry = await fetch(
+          "http://localhost:8080/api/total-entry"
+        ).then((res) => res.json());
+        const totalAmount = await fetch(
+          "http://localhost:8080/api/total-amount"
+        ).then((res) => res.json());
+        const motor = await fetch("http://localhost:8080/api/type-motor").then(
+          (res) => res.json()
+        );
+
+        // KPI
+        document.getElementById("totalEntry").innerText =
+          totalEntry.total_entry;
+        document.getElementById("totalAmount").innerText =
+          "Rp " + totalAmount.total_amount.toLocaleString("id-ID");
+        document.getElementById("totalLk").innerText = gender.laki_laki;
+        document.getElementById("totalPr").innerText = gender.perempuan;
+
+        // Gender Donut Chart
+        new ApexCharts(document.querySelector("#genderChart"), {
+          chart: {
+            type: "donut",
+            height: 300,
+          },
+          labels: ["Laki-laki", "Perempuan"],
+          series: [gender.laki_laki, gender.perempuan],
+          colors: ["#2563eb", "#ec4899"],
+          legend: {
+            position: "bottom",
+          },
+        }).render();
+
+        // Motor Bar Chart
+        new ApexCharts(document.querySelector("#motorChart"), {
+          chart: {
+            type: "bar",
+            height: 500,
+          },
+          series: [
+            {
+              name: "Jumlah",
+              data: motor.map((item) => item.total),
+            },
+          ],
+          xaxis: {
+            categories: motor.map((item) => item.type),
+          },
+          colors: ["#10b981"],
+        }).render();
+      }
+
+      loadDashboard();
+    </script>
+  </body>
+</html>
