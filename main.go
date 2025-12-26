@@ -26,7 +26,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         allowedOrigins := []string{
             "http://localhost:3000",      // contoh port localhost
-            "https://msk-dashboard-production.up.railway.app",
+            "https://msk-dashboard-front.vercel.app",
         }
 
         origin := r.Header.Get("Origin")
