@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -16,9 +17,11 @@ func main() {
 	mux.HandleFunc("/api/gender", handlers.GenderHandler(database))
 	mux.HandleFunc("/api/total-entry", handlers.TotalEntryHandler(database))
 	mux.HandleFunc("/api/total-amount", handlers.TotalAmountHandler(database))
+	mux.HandleFunc("/api/toj", handlers.TojHandler(database))
 	mux.HandleFunc("/api/type-motor", handlers.TypeMotorHandler(database))
 	mux.HandleFunc("/api/pekerjaan", handlers.PekerjaanHandler(database))
 
+    fmt.Println("Server run on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", CorsMiddleware(mux)))
 }
 
@@ -27,6 +30,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
         allowedOrigins := []string{
             "http://localhost:3000",      
 			"http://127.0.0.1:5500",
+			"http://127.0.0.1:5501",
             "https://msk-dashboard-front.vercel.app",
         }
 
