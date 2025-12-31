@@ -56,7 +56,7 @@ func PekerjaanHandler(db *sql.DB) http.HandlerFunc {
 		for rows.Next() {
 			var row models.JenisPekerjaan
 			if err := rows.Scan(&row.Pekerjaan, &row.Total); err != nil {
-				http.Error(w, err.Error(), 500)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			result = append(result, row)

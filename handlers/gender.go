@@ -12,49 +12,43 @@ import (
 func GenderHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// ========================
-		// METHOD CHECK
-		// ========================
+		// Method Check
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
-		// ========================
-		// REQUEST BODY
-		// ========================
+		// Request Body
 		var req struct {
 			Month int `json:"month"`
 			Year  int `json:"year"`
 		}
 
+		// Request Body Check
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "Invalid JSON body", http.StatusBadRequest)
 			return
 		}
 
+		// Month Request Check
 		if req.Month < 1 || req.Month > 12 {
 			http.Error(w, "Month harus 1-12", http.StatusBadRequest)
 			return
 		}
 
+		// Year Request Check
 		if req.Year < 2000 || req.Year > 2100 {
 			http.Error(w, "Year tidak valid", http.StatusBadRequest)
 			return
 		}
 
-		// ========================
-		// DATE RANGE
-		// ========================
+		// Date Range
 		loc, _ := time.LoadLocation("Asia/Jakarta")
-
 		awalBulan := time.Date(req.Year, time.Month(req.Month), 1, 0, 0, 0, 0, loc)
 		akhirBulan := awalBulan.AddDate(0, 1, 0)
 		awalBulanLalu := awalBulan.AddDate(0, -1, 0)
 
-		// ========================
-		// RESULT VARIABLES
-		// ========================
+		// Result Variable
 		var (
 			lk, pr             float64
 			lkPrev, prPrev     float64
@@ -64,9 +58,7 @@ func GenderHandler(db *sql.DB) http.HandlerFunc {
 			persenPrPrev       float64
 		)
 
-		// ========================
-		// QUERY
-		// ========================
+		// Query SQL
 		err := db.QueryRow(`
 			SELECT
 				-- TOTAL BULAN INI
@@ -117,21 +109,21 @@ func GenderHandler(db *sql.DB) http.HandlerFunc {
 
 			FROM rmsk17
 		`,
-			// bulan ini
+			// Current Month
 			awalBulan, akhirBulan,
 			awalBulan, akhirBulan,
 
-			// bulan lalu
+			// Previous Month
 			awalBulanLalu, awalBulan,
 			awalBulanLalu, awalBulan,
 
-			// persen bulan ini
+			// Current Month Persen
 			awalBulan, akhirBulan,
 			awalBulan, akhirBulan,
 			awalBulan, akhirBulan,
 			awalBulan, akhirBulan,
 
-			// persen bulan lalu
+			// Previous Month Persen
 			awalBulanLalu, awalBulan,
 			awalBulanLalu, awalBulan,
 			awalBulanLalu, awalBulan,
@@ -143,14 +135,13 @@ func GenderHandler(db *sql.DB) http.HandlerFunc {
 			&persenLkPrev, &persenPrPrev,
 		)
 
+		// Query SQL Check
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// ========================
-		// RESPONSE
-		// ========================
+		// Response Body
 		resp := models.Gender{
 			LakiLaki:           lk,
 			Perempuan:          pr,
